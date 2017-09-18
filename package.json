@@ -1,0 +1,16 @@
+{
+  "name": "puppeteer-headless",
+  "version": "1.0.0",
+  "description": "",
+  "main": "chrome.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "dependencies": {
+    "delay": "^2.0.0",
+    "minimist": "^1.2.0",
+    "mz": "^2.6.0",
+    "puppeteer": "0.10.2"
+  }
+}
