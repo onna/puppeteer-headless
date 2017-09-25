@@ -38,7 +38,6 @@ async function init() {
         if (cookies && host) {
             // Add cookies from the received cookie JSON object
             const cookiesObj = JSON.parse(cookies);
-                        console.log(cookiesObj)
 
             for (var key in cookiesObj) {
                 await page.setCookie({
