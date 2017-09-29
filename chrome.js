@@ -55,7 +55,7 @@ async function init() {
         }
 
         // Navigate to target page
-        await page.goto(url, {waitUntil: 'networkidle', networkIdleTimeout: 2000 });
+        await page.goto(url, {waitUntil: 'networkidle', networkIdleTimeout: 10000 });
         
         page.evaluate(_ => {
             window.scrollBy(0, window.innerHeight);
@@ -64,8 +64,6 @@ async function init() {
         const output_path = `${outputDir + output}`;
 
         if (pdf) {
-            // Generates a PDF with 'screen' media type.
-            await page.emulateMedia('screen');
             await page.pdf({
                 path: output_path,
                 landscape: true,
@@ -80,9 +78,6 @@ async function init() {
                 type: format,
                 fullPage: true
             });
-            //TODO convert screenshot file to base64
-            //const buffer = new Buffer(screenshot.data, 'base64');
-            //await file.writeFile(path, buffer, 'base64');
             console.log('Screenshot saved');
         }
         await browser.close();
