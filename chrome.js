@@ -57,9 +57,14 @@ async function init() {
         // Navigate to target page
         await page.goto(url, {waitUntil: 'networkidle' });
         
-        page.evaluate(_ => {
-            window.scrollTo(0,document.body.scrollHeight);
-        });
+        try {
+            page.evaluate(_ => {
+                window.scrollTo(0,document.body.scrollHeight);
+            });
+        } catch(err) {
+                console.warn('Could not scroll to end of page');
+        }
+
 
         const output_path = `${outputDir + output}`;
 
