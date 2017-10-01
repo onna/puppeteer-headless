@@ -55,10 +55,10 @@ async function init() {
         }
 
         // Navigate to target page
-        await page.goto(url, {waitUntil: 'networkidle', networkIdleTimeout: 10000 });
+        await page.goto(url, {waitUntil: 'networkidle' });
         
         page.evaluate(_ => {
-            window.scrollBy(0, window.innerHeight);
+            window.scrollTo(0,document.body.scrollHeight);
         });
 
         const output_path = `${outputDir + output}`;
