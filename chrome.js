@@ -69,6 +69,9 @@ async function init() {
         const output_path = `${outputDir + output}`;
 
         if (pdf) {
+             // Generates a PDF with 'screen' media type.
+            await page.emulateMedia('screen');
+
             await page.pdf({
                 path: output_path,
                 landscape: true,
