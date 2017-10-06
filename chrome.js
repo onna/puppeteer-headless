@@ -13,6 +13,7 @@ const userAgent = argv.userAgent;
 const fullPage = argv.full;
 const outputDir = argv.outputDir || './';
 const output = argv.output || `output.${format === 'png' ? 'png' : 'jpg'}`;
+const pageLoadDelay = parseInt(argv.loadDelay || '1') * 1000;
 
 // Host and cookies must be supplied together
 const cookies = argv.cookies;
@@ -55,11 +56,18 @@ async function init() {
         }
 
         // Navigate to target page
-        await page.goto(url, {waitUntil: 'networkidle' });
-        
+        await page.goto(url, {
+            waitUntil: 'networkidle',
+            networkIdleInflight: 0,
+            networkIdleTimeout: 1000 * 1
+        });
+
+        // sleep...
+        await (new Promise(resolve => setTimeout(resolve, pageLoadDelay)));
+
         try {
             page.evaluate(_ => {
-                window.scrollTo(0,document.body.scrollHeight);
+                window.scrollTo(0, document.body.scrollHeight);
             });
         } catch(err) {
                 console.warn('Could not scroll to end of page');
