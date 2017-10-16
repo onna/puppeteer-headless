@@ -62,6 +62,9 @@ async function init() {
             networkIdleTimeout: 1000 * 1
         });
 
+	// Wait for body to load
+	await page.waitForSelector("body");
+
         // sleep...
         await (new Promise(resolve => setTimeout(resolve, pageLoadDelay)));
 
