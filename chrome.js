@@ -10,7 +10,7 @@ const viewportWidth = argv.viewportWidth || 1920;
 const viewportHeight = argv.viewportHeight || 900;
 const delay = argv.delay || 0;
 const userAgent = argv.userAgent;
-const fullPage = argv.full;
+const fullPage = argv.full || false;
 const outputDir = argv.outputDir || './';
 const output = argv.output || `output.${format === 'png' ? 'png' : 'jpg'}`;
 const pageLoadDelay = parseInt(argv.loadDelay || '1') * 1000;
@@ -68,19 +68,19 @@ async function init() {
         // sleep...
         await (new Promise(resolve => setTimeout(resolve, pageLoadDelay)));
 
-        try {
-            page.evaluate(_ => {
-                window.scrollTo(0, document.body.scrollHeight);
-            });
-        } catch(err) {
-                console.warn('Could not scroll to end of page');
-        }
-
-
         const output_path = `${outputDir + output}`;
 
         if (pdf) {
-             // Generates a PDF with 'screen' media type.
+		
+	    try {
+            	page.evaluate(_ => {
+                	window.scrollTo(0, document.body.scrollHeight);
+            	});
+            } catch(err) {
+                console.warn('Could not scroll to end of page');
+            }	
+            
+	    // Generates a PDF with 'screen' media type.
             await page.emulateMedia('screen');
 
             await page.pdf({
@@ -95,7 +95,7 @@ async function init() {
             page.screenshot({
                 path: output_path,
                 type: format,
-                fullPage: true
+                fullPage: fullPage
             });
             console.log('Screenshot saved');
         }
