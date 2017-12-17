@@ -6,8 +6,8 @@ const timeout = require('delay');
 // CLI Args
 const url = argv.url || 'https://www.google.com';
 const format = argv.format === 'jpeg' ? 'jpeg' : 'png';
-const viewportWidth = argv.viewportWidth || 1920;
-const viewportHeight = argv.viewportHeight || 1200;
+var viewportWidth = argv.viewportWidth || 1920;
+var viewportHeight = argv.viewportHeight || 900;
 const delay = argv.delay || 0;
 const userAgent = argv.userAgent;
 const fullPage = argv.full || false;
@@ -30,10 +30,11 @@ async function init() {
 
     try {
         // Start the Chrome Debugging Protocol
-        browser =  await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         const page = await
         browser.newPage();
-        await page.setViewport({width: viewportWidth, height: viewportHeight});
 
         //node chrome.js --url= --output=b152988d320.pdf --pdf --full --host= --cookies="{\"token\":\"eyJraWQiO\"}"
         if (cookies && host) {
@@ -62,25 +63,36 @@ async function init() {
             networkIdleTimeout: 1000 * 1
         });
 
-	// Wait for body to load
-	await page.waitForSelector("body");
+        // Wait for body to load
+        await page.waitForSelector("body");
 
         // sleep...
         await (new Promise(resolve => setTimeout(resolve, pageLoadDelay)));
 
+        const newHeight = await page.evaluate(() => document.body.offsetHeight);
+        const newWidth = await page.evaluate(() => document.body.offsetWidth);
+        if (newHeight < viewportHeight) {
+            viewportHeight = newHeight;
+        }
+        if (newWidth < newWidth) {
+            viewportWidth = newWidth;
+        }
+        await page.setViewport({
+            width: viewportWidth,
+            height: viewportHeight
+        });
+
         const output_path = `${outputDir + output}`;
 
         if (pdf) {
-		
-	    try {
-            	page.evaluate(_ => {
-                	window.scrollTo(0, document.body.scrollHeight);
-            	});
-            } catch(err) {
+            try {
+                page.evaluate(_ => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
+            } catch (err) {
                 console.warn('Could not scroll to end of page');
-            }	
-            
-	    // Generates a PDF with 'screen' media type.
+            }
+            // Generates a PDF with 'screen' media type.
             await page.emulateMedia('screen');
 
             await page.pdf({
