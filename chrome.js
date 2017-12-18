@@ -58,9 +58,7 @@ async function init() {
 
         // Navigate to target page
         await page.goto(url, {
-            waitUntil: 'networkidle',
-            networkIdleInflight: 0,
-            networkIdleTimeout: 1000 * 1
+            waitUntil: 'networkidle2'
         });
 
         // Wait for body to load
