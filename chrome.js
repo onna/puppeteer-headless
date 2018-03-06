@@ -1,40 +1,99 @@
 const puppeteer = require('puppeteer');
 const argv = require('minimist')(process.argv.slice(2));
 const file = require('mz/fs');
-const timeout = require('delay');
 
-// CLI Args
-const url = argv.url || 'https://www.google.com';
-const format = argv.format === 'jpeg' ? 'jpeg' : 'png';
-var viewportWidth = argv.viewportWidth || 1920;
-var viewportHeight = argv.viewportHeight || 900;
-const delay = argv.delay || 0;
-const userAgent = argv.userAgent;
-const fullPage = argv.full || false;
-const outputDir = argv.outputDir || './';
-const output = argv.output || `output.${format === 'png' ? 'png' : 'jpg'}`;
-const pageLoadDelay = parseInt(argv.loadDelay || '1') * 1000;
+var browser;
 
-// Host and cookies must be supplied together
-const cookies = argv.cookies;
-const host = argv.host;
 
-const pdf = argv.pdf;
-const headers = argv.headers;
+// Listen on 3000 for screenshot requests
+startServer();
 
-init();
 
-async function init() {
+async function startServer() {
+    var express = require('express'),
+        app = express(),
+        port = process.env.PORT || 3000;
 
-    var browser;
+    var bodyParser = require('body-parser');
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+
+    console.log('Puppeteer screenshot server started on: ' + port);
+
+    app.get('/', (request, response) => {
+        response.send('OK')
+    })
+
+
+    // Check our browser is still alive
+    app.get('/healthcheck', async (request, response) => {
+
+        const page = await browser.newPage();
+
+        try {
+            await page.goto("about:blank"), {
+                waitUntil: 'networkidle2'
+            }
+
+            await page.close();
+            response.send('OK')
+
+        } catch (err) {
+            if (page) {
+                await page.close();
+            }
+            console.error('Exception while taking screenshot:', err);
+            return 400;
+        }
+    })
+
+
+    app.post('/screenshot', async function(request, response) {
+
+        url = request.body.url;
+
+        const format = request.body.format === 'jpeg' ? 'jpeg' : 'png'
+        const outputDir = request.body.output_dir || './';
+        const output = request.body.output || `output.${format === 'png' ? 'png' : 'jpg'}`;
+        const userAgent = request.body.user_agent || 'puppeteer';
+        const viewportHeight = request.body.viewport_height || 900;
+        const viewportWidth = request.body.viewport_width || 1920;
+        const pageLoadDelay = request.body.page_load_delay || 0;
+        const host = request.body.host;
+        const cookies = request.body.cookies;
+        const headers = request.body.headers;
+        const pdf = request.body.pdf === true ? true : false;
+        const fullPage = request.body.pdf === true ? true : false;
+
+
+        console.log(pdf)
+
+        sc_response = await takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth,
+            format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage);
+        response.sendStatus(sc_response)
+    })
+
+    app.listen(port, (err) => {
+        if (err) {
+            return console.log('Could not start puppeteer server', err)
+        }
+    })
+
+    // Start the Chrome Debugging Protocol
+    browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+}
+
+
+async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth, format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage) {
+
+    const page = await browser.newPage();
 
     try {
-        // Start the Chrome Debugging Protocol
-        browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-        const page = await
-        browser.newPage();
+
 
         //node chrome.js --url= --output=b152988d320.pdf --pdf --full --host= --cookies="{\"token\":\"eyJraWQiO\"}"
         if (cookies && host) {
@@ -42,6 +101,7 @@ async function init() {
             const cookiesObj = JSON.parse(cookies);
 
             for (var key in cookiesObj) {
+                console.log(cookiesObj[key])
                 await page.setCookie({
                     name: key,
                     value: cookiesObj[key],
@@ -99,22 +159,27 @@ async function init() {
                 printBackground: true
             });
 
-            console.log('PDF Printed with Chrome');
+            console.log('PDF Printed with Chrome as ' + output_path);
         } else {
+            //console.log(fullPage);
+
             const screenshot = await
             page.screenshot({
                 path: output_path,
                 type: format,
                 fullPage: fullPage
             });
-            console.log('Screenshot saved');
+            console.log('Screenshot saved as ' + output_path);
         }
-        await browser.close();
+
+        await page.close();
+        return 200;
+
     } catch (err) {
-        if (browser) {
-            await browser.close();
+        if (page) {
+            await page.close();
         }
         console.error('Exception while taking screenshot:', err);
-        process.exit(1);
+        return 400;
     }
 }
