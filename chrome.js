@@ -101,7 +101,6 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
             const cookiesObj = JSON.parse(cookies);
 
             for (var key in cookiesObj) {
-                console.log(cookiesObj[key])
                 await page.setCookie({
                     name: key,
                     value: cookiesObj[key],
