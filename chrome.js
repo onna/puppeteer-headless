@@ -65,7 +65,7 @@ async function startServer() {
         const cookies = request.body.cookies;
         const headers = request.body.headers;
         const pdf = request.body.pdf === true ? true : false;
-        const fullPage = request.body.pdf === true ? true : false;
+        const fullPage = request.body.full_page === true ? true : false;
 
 
         console.log(pdf)
