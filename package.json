@@ -8,7 +8,9 @@
   },
   "author": "",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "delay": "^2.0.0",
+    "express": "^4.16.2",
     "minimist": "^1.2.0",
     "mz": "^2.6.0",
     "puppeteer": "^0.13.0"
