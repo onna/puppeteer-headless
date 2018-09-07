@@ -20,6 +20,11 @@ async function startServer() {
         extended: true
     }));
 
+    // Start the Chrome Debugging Protocol
+    browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
     console.log('Puppeteer screenshot server started on: ' + port);
 
     app.get('/', (request, response) => {
@@ -80,11 +85,6 @@ async function startServer() {
             return console.log('Could not start puppeteer server', err)
         }
     })
-
-    // Start the Chrome Debugging Protocol
-    browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
 }
 
 
