@@ -72,11 +72,13 @@ async function startServer() {
         const pdf = request.body.pdf === true ? true : false;
         const fullPage = request.body.full_page === true ? true : false;
         const landscape = request.body.landscape === true ? true: false;
+        const margin = request.body.margin || {top: 20, right: 0, bottom: 20, left: 0} 
 
         console.log(pdf)
 
         sc_response = await takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth,
-            format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape);
+            format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape,
+            margin);
         response.sendStatus(sc_response)
     })
 
@@ -89,7 +91,7 @@ async function startServer() {
 
 
 async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth, format, userAgent,
-     pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape) {
+     pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape, margin) {
 
     const page = await browser.newPage();
 
@@ -156,7 +158,8 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
             await page.pdf({
                 path: output_path,
                 landscape: landscape,
-                printBackground: true
+                printBackground: true,
+                margin: margin
             });
 
             console.log('PDF Printed with Chrome as ' + output_path);
