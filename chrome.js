@@ -73,12 +73,14 @@ async function startServer() {
         const fullPage = request.body.full_page === true ? true : false;
         const landscape = request.body.landscape === true ? true: false;
         const margin = request.body.margin || {top: 20, right: 0, bottom: 20, left: 0} 
+        const deviceScaleFactor = request.body.deviceScaleFactor || 1;
+        const timeout = request.body.timeout || 30000;
 
         console.log(pdf)
 
         sc_response = await takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth,
             format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape,
-            margin);
+            margin, timeout, deviceScaleFactor);
         response.sendStatus(sc_response)
     })
 
@@ -91,7 +93,7 @@ async function startServer() {
 
 
 async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth, format, userAgent,
-     pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape, margin) {
+     pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape, margin, timeoutValue, deviceScaleFactorValue) {
 
     const page = await browser.newPage();
 
@@ -120,7 +122,8 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
 
         // Navigate to target page
         await page.goto(url, {
-            waitUntil: 'networkidle2'
+            waitUntil: 'networkidle2',
+            timeout: timeoutValue
         });
 
         // Wait for body to load
@@ -139,7 +142,8 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
         }
         await page.setViewport({
             width: viewportWidth,
-            height: viewportHeight
+            height: viewportHeight,
+            deviceScaleFactor: deviceScaleFactorValue
         });
 
         const output_path = `${outputDir + output}`;
