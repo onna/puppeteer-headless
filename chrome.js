@@ -20,11 +20,6 @@ async function startServer() {
         extended: true
     }));
 
-    // Start the Chrome Debugging Protocol
-    browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
     console.log('Puppeteer screenshot server started on: ' + port);
 
     app.get('/', (request, response) => {
@@ -35,6 +30,7 @@ async function startServer() {
     // Check our browser is still alive
     app.get('/healthcheck', async (request, response) => {
 
+        browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
 
         try {
@@ -43,11 +39,13 @@ async function startServer() {
             }
 
             await page.close();
+            browser.close()
             response.send('OK')
 
         } catch (err) {
             if (page) {
                 await page.close();
+                browser.close()
             }
             console.error('Exception while taking screenshot:', err);
             return 400;
@@ -90,6 +88,7 @@ async function startServer() {
 
 async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth, format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage) {
 
+    browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
     const page = await browser.newPage();
 
     try {
@@ -172,11 +171,13 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
         }
 
         await page.close();
+        browser.close()
         return 200;
 
     } catch (err) {
         if (page) {
             await page.close();
+            browser.close()
         }
         console.error('Exception while taking screenshot:', err);
         return 400;
