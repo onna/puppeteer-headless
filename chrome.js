@@ -30,7 +30,7 @@ async function startServer() {
     // Check our browser is still alive
     app.get('/healthcheck', async (request, response) => {
 
-        browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']});
         const page = await browser.newPage();
 
         try {
@@ -88,7 +88,7 @@ async function startServer() {
 
 async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWidth, format, userAgent, pageLoadDelay, host, cookies, headers, pdf, fullPage) {
 
-    browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']});
     const page = await browser.newPage();
 
     try {
@@ -183,3 +183,11 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
         return 400;
     }
 }
+process.on('unhandledRejection', (reason, promise) => {
+  // If we get "Page crash!" or other uncaught exceptions, we close the browser and exit the process
+  console.log('Unhandled Rejection at:', reason.stack || reason)
+  if (browser){
+    browser.close()
+  }
+  process.exit()
+})
