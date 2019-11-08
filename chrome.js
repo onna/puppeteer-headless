@@ -183,3 +183,10 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
         return 400;
     }
 }
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', reason.stack || reason)
+  if (browser){
+    browser.close()
+  }
+  process.exit()
+})
