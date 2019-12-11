@@ -10,13 +10,26 @@ startServer();
 
 
 async function disableJavaScript(page){
+    // Disable rendering inline javascripts on the page
+    await page.setJavaScriptEnabled(false);
+
+    // Intercept javascript pages
     await page.setRequestInterception(true);
     page.on('request', request => {
-        if (request.resourceType() === 'script')
+        if (request.resourceType() === 'script' || request.url().endsWith('.js'))
             console.log('Javascript found! Blocking...');
             request.abort();
         else
             request.continue();
+    });
+}
+
+
+async function removeIframes(page){
+    await page.evaluate(() => {
+        document.querySelectorAll('iframe').forEach(function(node) {
+            node.parentNode.removeChild(node);
+        })
     });
 }
 
@@ -49,6 +62,7 @@ async function startServer() {
 
         const page = await browser.newPage();
 
+        await removeIframes(page);
         await disableJavaScript(page);
 
         try {
@@ -110,6 +124,8 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
      pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape, margin, timeoutValue, deviceScaleFactorValue) {
 
     const page = await browser.newPage();
+
+    await removeIframes(page);
     await disableJavaScript(page);
 
     try {
