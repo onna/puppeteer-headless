@@ -13,6 +13,7 @@ async function disableJavaScript(page){
     await page.setRequestInterception(true);
     page.on('request', request => {
         if (request.resourceType() === 'script')
+            console.log('Javascript found! Blocking...');
             request.abort();
         else
             request.continue();
