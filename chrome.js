@@ -9,6 +9,17 @@ var browser;
 startServer();
 
 
+async function disableJavaScript(page){
+    await page.setRequestInterception(true);
+    page.on('request', request => {
+        if (request.resourceType() === 'script')
+            request.abort();
+        else
+            request.continue();
+    });
+}
+
+
 async function startServer() {
     var express = require('express'),
         app = express(),
@@ -36,6 +47,8 @@ async function startServer() {
     app.get('/healthcheck', async (request, response) => {
 
         const page = await browser.newPage();
+
+        await disableJavaScript(page);
 
         try {
             await page.goto("about:blank"), {
@@ -72,7 +85,7 @@ async function startServer() {
         const pdf = request.body.pdf === true ? true : false;
         const fullPage = request.body.full_page === true ? true : false;
         const landscape = request.body.landscape === true ? true: false;
-        const margin = request.body.margin || {top: 20, right: 0, bottom: 20, left: 0} 
+        const margin = request.body.margin || {top: 20, right: 0, bottom: 20, left: 0}
         const deviceScaleFactor = request.body.deviceScaleFactor || 1;
         const timeout = request.body.timeout || 30000;
 
@@ -96,6 +109,7 @@ async function takeScreenshot(url, outputDir, output, viewportHeight, viewportWi
      pageLoadDelay, host, cookies, headers, pdf, fullPage, landscape, margin, timeoutValue, deviceScaleFactorValue) {
 
     const page = await browser.newPage();
+    await disableJavaScript(page);
 
     try {
 
